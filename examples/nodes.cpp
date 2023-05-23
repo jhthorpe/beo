@@ -26,13 +26,12 @@ int main()
     auto world_id = world_comm.task_id();
     auto shared_id = shared_comm.task_id();
 
+    printf("world task id is %d\n",world_id);
+
     if (shared_comm.is_master())
     {
-    printf("world size is %d, this task is rank %d\n", beo.comms().world().num_tasks()
-                                                     , beo.comms().world().task_id());
-
-    printf("shared size is %d, this task is rank %d \n", beo.comms().shared().num_tasks()
-                                                       , beo.comms().shared().task_id());
+        printf("shared size is %d, this task is rank %d \n", beo.comms().shared().num_tasks()
+                                                           , beo.comms().shared().task_id());
     }
     
     

@@ -27,7 +27,9 @@
 #define _BEO_DATA_DATA_HPP_
 
 #include "chunk.hpp"
+#include "chunk_hash.hpp"
 
+#include <unordered_map>
 #include <string>
 #include <vector>
 #include <set>
@@ -45,8 +47,8 @@ class Data
         using lengths_t   = std::vector<size_t>;
 
         using mutex_t     = std::recursive_mutex;
-
-        using chunk_set_t = std::vector<beo::Chunk>;
+  
+        using chunk_map_t = std::unordered_map<beo::Chunk::key_t, beo::Chunk, beo::Chunk_Hash>;
 
         using key_t       = std::string;
 
@@ -58,7 +60,7 @@ class Data
 
         lengths_t   lengths_;
 
-        chunk_set_t chunks_;
+        chunk_map_t chunks_;
     
     public:
 
@@ -76,10 +78,10 @@ class Data
              const size_t num);
 
         Data(const std::string& name, 
-             chunk_set_t& chunks);
+             chunk_map_t& chunks);
 
         Data(std::string&& name, 
-             chunk_set_t&& chunks);
+             chunk_map_t&& chunks);
 
         Data(const Data& other);
 
@@ -107,9 +109,9 @@ class Data
 
         size_t size() const;
 
-        const chunk_set_t& chunks() const {return chunks_;}
+        const chunk_map_t& chunks() const {return chunks_;}
 
-        chunk_set_t& chunks() {return chunks_;} 
+        chunk_map_t& chunks() {return chunks_;} 
 
         //Iterators
         auto begin() {return chunks_.begin();}
@@ -121,7 +123,7 @@ class Data
         auto cend() const {return chunks_.cend();}
 
         //Adders
-        void add_chunk(Chunk& other);
+        void add_chunk(const Chunk& other);
 
         void add_chunk(Chunk&& other);
 
@@ -137,9 +139,55 @@ class Data
 
         const key_t& key() const {return name_;}
 
-//        key_t& key() {return name_;}
+        //remove chunk
+        void remove_chunk(const Chunk::offsets_t& offsets);
+
+        //retrive a chunk
+        auto& get_chunk(const Chunk::offsets_t& offsets);
 
 };
+
+/*****************************************
+ * Remove a chunk
+ * 
+ * threadsafe
+*****************************************/
+void Data::remove_chunk(const Chunk::offsets_t& offsets)
+{
+    std::lock_guard<mutex_t> guard(m);
+
+    chunks_.erase(offsets);
+}
+
+
+/*****************************************
+ * Retrieve a chunk
+*****************************************/
+auto& Data::get_chunk(const Chunk::offsets_t& offsets)
+{
+    std::lock_guard<mutex_t> guard(m);
+
+    auto itr = chunks_.find(offsets);
+
+    if (itr != chunks_.end())
+    {
+        return itr->second;
+    }
+
+    else
+    {
+        std::string offstr = "[";
+        for (const auto elm : offsets)
+        {
+            offstr += std::to_string(elm);
+            offstr += ", ";
+        } 
+        offstr += "]";
+        printf("\nbeo::error - Could not find chunk %s\n", offstr.c_str());
+        exit(1);
+    }
+}
+
 
 /*****************************************
  * lock and unlock
@@ -148,18 +196,14 @@ class Data
 void Data::lock() 
 {
     m.lock();
-    auto current = chunks_.begin();
-    const auto end = chunks_.end();
-    while (current != end)
-    {
-        current->lock(); 
-        current++;
-    } 
+
+    for (auto& [key, chunk] : chunks_) chunk.lock();
 }
 
 void Data::unlock() 
 {
-    for (auto& chunk : chunks_) chunk.m.unlock();
+    for (auto& [key, chunk] : chunks_) chunk.unlock();
+
     m.unlock();
 }
 
@@ -210,7 +254,7 @@ Data::Data(std::string&& name,
 }
 
 Data::Data(const std::string& name, 
-           chunk_set_t& chunks)
+           chunk_map_t& chunks)
 {
     lock();
 
@@ -221,7 +265,7 @@ Data::Data(const std::string& name,
 }
 
 Data::Data(std::string&& name, 
-           chunk_set_t&& chunks)
+           chunk_map_t&& chunks)
 {
     lock(); 
 
@@ -317,30 +361,38 @@ Data::~Data()
  * the set of chunks manually
 *****************************************/
 //Copy add
-void Data::add_chunk(beo::Chunk& other)
+void Data::add_chunk(const beo::Chunk& cother)
 {
-    chunks_.push_back(beo::Chunk(other));
+    auto& other = const_cast<beo::Chunk&>(cother);  
+
+    std::lock_guard<mutex_t> g1(m);  
+    std::lock_guard<mutex_t> g2(other.m);  
+
+    chunks_.insert({other.offsets(), other});
 }
 
 void Data::add_chunk(beo::Chunk&& other)
 {
-    chunks_.emplace_back(std::move(beo::Chunk(other))); 
+    std::lock_guard<mutex_t> g1(m); 
+
+    chunks_.emplace(std::make_pair(other.offsets(), other)); 
 }
 
 void Data::add_chunk(const beo::Chunk::offsets_t& offsets,
                      const beo::Chunk::lengths_t& lengths,
                      const beo::Chunk::strides_t& strides)
 {
-    chunks_.push_back(beo::Chunk{offsets,lengths,strides});
+    chunks_.insert({offsets, beo::Chunk{offsets,lengths,strides}});
 }
 
 void Data::add_chunk(beo::Chunk::offsets_t&& offsets,
                      beo::Chunk::lengths_t&& lengths,
                      beo::Chunk::strides_t&& strides)
 {
-    chunks_.emplace_back(std::move(offsets),
-                         std::move(lengths),
-                         std::move(strides));
+    chunks_.emplace(std::make_pair(offsets, 
+                                   beo::Chunk{std::move(offsets),
+                                              std::move(lengths),
+                                              std::move(strides)}));
 }
 
 void Data::reserve(const size_t num) 

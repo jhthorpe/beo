@@ -2,16 +2,46 @@
 #include <future>
 #include <unistd.h>
 
+#define _MPI
+
+#define _BEO_MPI_
+
+#if defined _BEO_MPI_
+    #include <mpi.h>
+#endif
+
 #include "../include/beo.hpp"
+
+void print_chunk(const beo::Chunk& chunk)
+{
+    printf("Chunk = [");
+    for (const auto elm : chunk.offsets()) printf("%zu, ",elm);
+    printf("] | [");
+    for (const auto elm : chunk.lengths()) printf("%zu, ",elm);
+    printf("] | [");
+    for (const auto elm : chunk.strides()) printf("%zu, ",elm);
+    printf("]\n");
+}
+
+void print_chunks(const beo::Data& data)
+{
+    for (const auto& [key, chunk] : data.chunks()) print_chunk(chunk);
+}
 
 int main()
 {
+    #if defined _BEO_MPI_
+    MPI_Init(NULL,NULL);
+    #endif
     
     beo::Manager beo;
     beo.init();
 
     auto& world_comm = beo.comms().world();
     auto  world_is_master = world_comm.is_master();
+    auto  world_id = world_comm.task_id();
+
+    printf("id within world is: %d,%d\n", world_comm.task_id(),world_id);
 
     auto& data_manager = beo.data_manager();
 
@@ -62,22 +92,40 @@ int main()
         for (const auto& [key, val] : data_manager.data_map())
         {
             printf("Chunks within %s\n",key.c_str());
-            
-            for (const auto& chunk : val.chunks())
-            {
-                printf("Chunk = [");
-                for (const auto elm : chunk.offsets()) printf("%zu, ",elm);
-                printf("] | [");
-                for (const auto elm : chunk.lengths()) printf("%zu, ",elm);
-                printf("] | [");
-                for (const auto elm : chunk.strides()) printf("%zu, ",elm);
-                printf("]\n");
 
-            }
+            print_chunks(val);
+            
         }
+
         data_manager.unlock();
     }
-    
+
+    beo::barrier(world_comm);
+    if (world_is_master) printf("\nwe are here\n");
+
+   //Retrieve a particular set of Data
+   beo::barrier(world_comm);
+   if (world_is_master)
+   {
+       auto& C_data = data_manager.get("C");
+       printf("Chunks within %s\n",C_data.name().c_str());
+       print_chunks(C_data);
+
+       printf("\nTrying to find chunk [0,0]\n");
+       auto& C_chunk_00 = C_data.get_chunk({0,0});
+       print_chunk(C_chunk_00);
+   }
+
+   beo::barrier(world_comm);
+
+   if (!world_is_master)
+   {
+       auto& F_data = data_manager.get("F");
+       printf("Chunks within %s\n",F_data.name().c_str());
+       print_chunks(F_data);
+   }
+
+   beo::barrier(world_comm);
 
 /*
     printf("%s\n", comp(c00, c20) ? "bad\n" : "good\n");
@@ -88,6 +136,10 @@ int main()
 */
 
     beo.finalize();
+
+    #if defined _BEO_MPI_
+    MPI_Finalize();
+    #endif
 
     return 0; 
 }

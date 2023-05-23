@@ -19,9 +19,6 @@
  *   with mutex. However, these are const_cast behind the scenes
  *   to allow the correct interfaces with container iterators
  *
- * TODO:
- *    - optimize < operator, since this
- *        will be called a lot
 *****************************************/
 #ifndef _BEO_DATA_CHUNK_HPP_
 #define _BEO_DATA_CHUNK_HPP_
@@ -32,13 +29,13 @@
 #include <stdlib.h>
 #include <assert.h>
 
-
 namespace beo
 {
 
 class Chunk
 {
     public:
+
         using offsets_t = std::vector<size_t>;
 
         using lengths_t = std::vector<size_t>;
@@ -47,14 +44,17 @@ class Chunk
 
         using mutex_t   = std::recursive_mutex;
 
+        using key_t     = offsets_t;
+
 //    friend bool comp(const beo::Chunk& a, const beo::Chunk& b);
         friend bool comp();
 
-        enum class Status {u, f, r, rw, w};
+        enum class Status {unassigned, in_memory, on_disk};
 
         mutex_t m;
 
     protected:
+
         Status status_;
 
         offsets_t offsets_;
@@ -64,6 +64,7 @@ class Chunk
         strides_t strides_;
     
     public:
+
         //Constructors
         Chunk();
 
@@ -115,8 +116,20 @@ class Chunk
             return sz;
         };
 
+        bool operator==(const Chunk& other);
 
 };
+
+/*****************************************
+ * ==
+ *
+ * compares two chunks by ONLY their
+ * offsets
+*****************************************/
+bool Chunk::operator==(const Chunk& other)
+{
+    return offsets() == other.offsets() ? true : false; 
+}
 
 /*****************************************
  * Constructors
@@ -127,7 +140,7 @@ class Chunk
 Chunk::Chunk() 
 {
     std::lock_guard<mutex_t> guard(m);
-    status_ = Status::u; 
+    status_ = Status::unassigned; 
 }
 
 //Constructor from offsets and lengths
@@ -136,7 +149,7 @@ Chunk::Chunk(const offsets_t& offsets,
              const strides_t& strides)
 {
     std::lock_guard<mutex_t> guard(m);
-    status_  = Status::u;
+    status_  = Status::unassigned;
     offsets_ = offsets;
     lengths_ = lengths;
     strides_ = strides;
@@ -148,7 +161,7 @@ Chunk::Chunk(offsets_t&& offsets,
              strides_t&& strides)
 {
     std::lock_guard<mutex_t> guard(m);
-    status_  = Status::u;
+    status_  = Status::unassigned;
     offsets_ = std::move(offsets);
     lengths_ = std::move(lengths);
     strides_ = std::move(strides);
@@ -160,7 +173,7 @@ Chunk::Chunk(const Chunk& cother)
     auto& other = const_cast<Chunk&>(cother);
     std::lock_guard<mutex_t> guard1(m);
     std::lock_guard<mutex_t> guard2(other.m);
-    status_  = Status::f;
+    status_  = other.status_;
     offsets_ = other.offsets_;
     lengths_ = other.lengths_;
     strides_ = other.strides_;

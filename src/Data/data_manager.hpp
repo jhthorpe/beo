@@ -68,7 +68,7 @@ class Data_Manager
         int remove(const beo::Data::key_t& key);  
 
         //retrieve        
-//        auto& get(const beo::Data::key_t& key); 
+        auto& get(const beo::Data::key_t& key); 
 
 }; //end class defintion Data_Manager
 
@@ -108,6 +108,9 @@ void Data_Manager::unlock()
  * add 
  *
  * Add a new Data type to Data_Manager
+ *
+ * Returns 0 if the data was added correctly,
+ * 1 otherwise
 *****************************************/
 int Data_Manager::add(const beo::Data& data)
 {
@@ -123,12 +126,13 @@ int Data_Manager::add(beo::Data&& data)
     return data_map_.emplace(std::make_pair(data.name(), data)).second ? 0: 1;
 }
 
-
 /*****************************************
  * remove
  *
  * Removes a beo::Data entity from 
  * beo::Data_Manager 
+ *
+ * Returns 0 if no error, 1 if error
 *****************************************/
 int Data_Manager::remove(const key_t& key)
 {
@@ -142,13 +146,28 @@ int Data_Manager::remove(const key_t& key)
  *
  * returns a reference to the beo::Data 
  *   entiry contained.
+ *
+ * 
 *****************************************/
-/*
-auto Data_Manager::get(const beo::Data::key_t& key) 
+auto& Data_Manager::get(const beo::Data::key_t& key) 
 {
     std::lock_guard<mutex_t> guard(m);
+
+    auto itr = data_map_.find(key);
+
+    if (itr != data_map_.end())
+    {
+        return itr->second;
+    }
+
+    else
+    {
+        printf("\nbeo::error\n");                
+        printf("Could not find data %s on Data_Manager\n",key.c_str());
+        exit(1);
+    } 
+
 }
-*/
 
 } //end namespace beo
 
