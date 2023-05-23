@@ -14,6 +14,11 @@
  * Thread safety can be enforeced with 
  * the mutex_t m member, and via the lock() and unlock() functions
  *
+ * Note that the constructors often request a reference to a const
+ *   "other" chunk, which might seem like it doesn't behave well
+ *   with mutex. However, these are const_cast behind the scenes
+ *   to allow the correct interfaces with container iterators
+ *
  * TODO:
  *    - optimize < operator, since this
  *        will be called a lot
@@ -70,11 +75,11 @@ class Chunk
               lengths_t&& lengths,
               strides_t&& strides);
 
-        Chunk(Chunk& other);
+        Chunk(const Chunk& other);
 
         Chunk(Chunk&& other);
 
-        Chunk& operator=(Chunk& other);
+        Chunk& operator=(const Chunk& other);
 
         Chunk& operator=(Chunk&& other);
 
@@ -150,8 +155,9 @@ Chunk::Chunk(offsets_t&& offsets,
 }
 
 //Copy constructor from other chunk
-Chunk::Chunk(Chunk& other) 
+Chunk::Chunk(const Chunk& cother) 
 {
+    auto& other = const_cast<Chunk&>(cother);
     std::lock_guard<mutex_t> guard1(m);
     std::lock_guard<mutex_t> guard2(other.m);
     status_  = Status::f;
@@ -172,10 +178,12 @@ Chunk::Chunk(Chunk&& other)
 }
 
 //Copy assignement from other chunk
-Chunk& Chunk::operator=(Chunk& other)
+Chunk& Chunk::operator=(const Chunk& cother)
 {
+    auto& other = const_cast<Chunk&>(cother);
     std::lock_guard<mutex_t> guard1(m);
     std::lock_guard<mutex_t> guard2(other.m);
+    if (&other == this) return *this; 
     status_  = other.status_;
     offsets_ = other.offsets_;
     lengths_ = other.lengths_;
@@ -188,6 +196,7 @@ Chunk& Chunk::operator=(Chunk&& other)
 {
     std::lock_guard<mutex_t> guard1(m);
     std::lock_guard<mutex_t> guard2(other.m);
+    if (&other == this) return *this; 
     status_  = std::move(other.status_);
     offsets_ = std::move(other.offsets_);
     lengths_ = std::move(other.lengths_);

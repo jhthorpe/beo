@@ -1,5 +1,5 @@
 /*****************************************
- * node_opps.hpp
+ * node_ops.hpp
  * 
  * JHT, May 22, 2023, SMU, Dallas, Texas
  * 	- created
@@ -8,10 +8,10 @@
  *   inter and intra node operations
  *
  * Functions included here:
- *      barrier(Node_Set);
+ *      barrier
 *****************************************/
-#ifndef _BEO_NODES_NODE_OPPS_
-#define _BEO_NODES_NODE_OPPS_
+#ifndef _BEO_NODE_NODE_OPPS_
+#define _BEO_NODE_NODE_OPPS_
 
 #if defined _BEO_MPI_
     #include <mpi.h>
@@ -28,7 +28,10 @@ namespace beo
 void barrier(beo::Node_Set& set);
 
 /*****************************************
- * Synchronization functions
+ * barrier
+ *
+ * Creates an MPI barrier for a particular 
+ * Node_Set 
 *****************************************/
 void barrier(beo::Node_Set& set)
 {
@@ -36,6 +39,7 @@ void barrier(beo::Node_Set& set)
         MPI_Barrier(set.comm());
     #endif
 }
+
 
 } //end beo namespace
 

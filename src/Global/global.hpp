@@ -4,15 +4,12 @@
  * JHT, May 22, 2023, SMU, Dallas, TX
  *	- Created 
  * 
- * Header file that initializes globals
- *   for beocomp 
+ * Header file for including the 
+ * things that beo needs to operate 
  *
- * Functions here include:
 *****************************************/
 #ifndef _BEO_GLOBAL_HPP_
 #define _BEO_GLOBAL_HPP_
-
-#include "../Node/comms.hpp"
 
 #include "manager.hpp"
 

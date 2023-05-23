@@ -15,6 +15,6 @@
 
 #include "comms.hpp"
 #include "node_set.hpp"
-#include "node_opps.hpp"
+#include "node_ops.hpp"
 
 #endif

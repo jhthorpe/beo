@@ -33,6 +33,8 @@
 #include "../Node/node_inc.hpp"
 #include "../Data/data_inc.hpp"
 
+#include <unordered_map>
+
 namespace beo
 {
 
@@ -42,7 +44,9 @@ class Manager
 
     protected:
  
-        Comms comms_;
+        Comms        comms_;
+
+        Data_Manager data_manager_; 
 
     public:
 
@@ -55,6 +59,10 @@ class Manager
         const Comms& comms() const {return comms_;}
 
         Comms& comms() {return comms_;}
+
+        const Data_Manager& data_manager() const {return data_manager_;}
+
+        Data_Manager& data_manager() {return data_manager_;}
 
 };
 

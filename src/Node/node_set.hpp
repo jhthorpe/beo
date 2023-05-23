@@ -23,6 +23,9 @@
 #endif
 
 #include <utility>
+#include <vector>
+
+#include "node.hpp"
 
 namespace beo
 {
@@ -31,23 +34,25 @@ namespace beo
 #if defined _BEO_MPI_
 class Node_Set
 {
-    protected: 
-    
-        MPI_Comm comm_;
-
-        MPI_Info info_;
-
-        int      num_tasks_;
-
-        int      task_id_;
-
-        bool     is_master_;    
-
     public:
 
-//        Node_Set() {};
+        using node_list_t = std::vector<beo::Node>;
 
-//       ~Node_Set();
+    protected: 
+    
+        MPI_Comm    comm_;
+
+        MPI_Info    info_;
+
+        int         num_tasks_;
+
+        int         task_id_;
+
+        bool        is_master_;    
+        
+        node_list_t nodes_;
+
+    public:
 
         // In the MPI case, this must be called 
         // after construction. 
@@ -65,12 +70,24 @@ class Node_Set
 
         bool is_master() const {return is_master_;} 
 
+        const Node& node(const size_t id) const {return nodes_[id];}
+
+        Node& node(const size_t id) {return nodes_[id];}
+
+        const node_list_t& nodes() const {return nodes_;}
+
+        node_list_t& nodes() {return nodes_;}
+
 };
 
 //If we do not have MPI
 #else
 class Node_Set
 {
+    public:
+
+        using node_list_t = std::vector<beo::Node>;
+
     protected:
 
         int num_tasks_{1};
@@ -78,6 +95,8 @@ class Node_Set
         int task_id_{1}; 
 
         bool is_master_{true};
+
+        node_list_t nodes_;
 
     public:
 
@@ -95,6 +114,14 @@ class Node_Set
 
         bool is_master() const {return is_master_;} 
 
+        const Node& node(const size_t id) const {return nodes_[id];}
+
+        Node& node(const size_t id) {return nodes_[id];}
+
+        const node_list_t& nodes() const {return nodes_;}
+
+        node_list_t& nodes() {return nodes_;}
+
     
 };
 
@@ -103,7 +130,9 @@ class Node_Set
 //Member functions if with have MPI
 #if defined _BEO_MPI_
 /*****************************************
- * Constructors with MPI
+ * init
+ *
+ * call this after MPI_Init 
 *****************************************/
 //Constructor
 void Node_Set::init(MPI_Comm&& comm)
@@ -120,7 +149,9 @@ void Node_Set::init(MPI_Comm&& comm)
 }
 
 /*****************************************
- * Destructors with MPI 
+ * finalize 
+ *
+ * call this before the MPI_Finalize 
 *****************************************/
 void Node_Set::finalize()
 {

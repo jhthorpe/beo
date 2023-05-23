@@ -15,6 +15,7 @@
 
 #include "chunk.hpp"
 #include "data.hpp"
+#include "data_manager.hpp"
 
 
 #endif

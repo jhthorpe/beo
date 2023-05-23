@@ -15,6 +15,11 @@
  * which additionally lock the chunks 
  * contained within 
  * 
+ * Note that the copy constructor and assignment
+ *   operators take in a reference to a const
+ *   "other" beo::Data entity. These are const_cast
+ *   behind the scenes to enable thread safety
+ * 
  * TODO:
  *     - change std::vector to std::unordered_map? 
 *****************************************/
@@ -43,9 +48,12 @@ class Data
 
         using chunk_set_t = std::vector<beo::Chunk>;
 
+        using key_t       = std::string;
+
         mutex_t m;
 
     protected:
+
         std::string name_;
 
         lengths_t   lengths_;
@@ -53,7 +61,10 @@ class Data
         chunk_set_t chunks_;
     
     public:
+
         //Constructors
+        Data();
+
         Data(const std::string& name);
 
         Data(std::string&& name);
@@ -70,11 +81,15 @@ class Data
         Data(std::string&& name, 
              chunk_set_t&& chunks);
 
-        Data(Data& other);
+        Data(const Data& other);
 
         Data(Data&& other);
 
-        Data& operator=(Data& other);
+        //Destructors
+       ~Data();
+
+        //Assignment
+        Data& operator=(const Data& other);
 
         Data& operator=(Data&& other);
 
@@ -91,6 +106,8 @@ class Data
         size_t ndim() const {return lengths_.size();}
 
         size_t size() const;
+
+        const chunk_set_t& chunks() const {return chunks_;}
 
         chunk_set_t& chunks() {return chunks_;} 
 
@@ -117,6 +134,10 @@ class Data
                        Chunk::strides_t&& strides);
 
         void reserve(const size_t num);
+
+        const key_t& key() const {return name_;}
+
+//        key_t& key() {return name_;}
 
 };
 
@@ -157,6 +178,9 @@ size_t Data::size() const
  * constructors and destructors
  * Threadsafe
 *****************************************/
+Data::Data() 
+{}
+
 Data::Data(const std::string& name)
 {
     std::lock_guard<mutex_t> guard(m);
@@ -207,8 +231,10 @@ Data::Data(std::string&& name,
     unlock();
 }
 
-Data::Data(Data& other)
+Data::Data(const Data& cother)
 {
+    auto& other = const_cast<Data&>(cother); 
+
     lock();
     other.lock();
 
@@ -233,8 +259,15 @@ Data::Data(Data&& other)
     unlock(); 
 }
 
-Data& Data::operator=(Data& other)
+Data& Data::operator=(const Data& cother)
 {
+    auto& other = const_cast<Data&>(cother);
+    
+    std::lock_guard<mutex_t> g1(m);
+    std::lock_guard<mutex_t> g2(other.m);
+
+    if (&other == this) return *this;
+
     lock();
     other.lock();
 
@@ -250,6 +283,11 @@ Data& Data::operator=(Data& other)
 
 Data& Data::operator=(Data&& other)
 {
+    std::lock_guard<mutex_t> g1(m);
+    std::lock_guard<mutex_t> g2(other.m);
+
+    if (&other == this) return *this;
+
     lock();
     other.lock();
 
@@ -262,6 +300,12 @@ Data& Data::operator=(Data&& other)
 
     return *this;
 }
+
+/*****************************************
+ * Destructor
+*****************************************/
+Data::~Data()
+{}
 
 /*****************************************
  * Adding chunks

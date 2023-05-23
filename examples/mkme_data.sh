@@ -1,3 +1,5 @@
 #!/bin/bash
-mpic++ --std=c++17 data.cpp -o data.exe
-mpiexec -np 2 data.exe
+#rm data.exe
+#mpic++ --std=c++17 data.cpp -o data.exe
+#mpiexec -np 1 data.exe
+clang++ --std=c++17 data.cpp -o data.exe
