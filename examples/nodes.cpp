@@ -17,8 +17,7 @@ int main()
     #endif
 
     //cannot initialize the beo comms until mpi is initialized
-    beo::Manager beo; 
-    beo.init();
+    beo::Enviroment beo; 
 
     auto& world_comm = beo.comms().world();
     auto& shared_comm = beo.comms().shared();
@@ -85,10 +84,9 @@ int main()
 //    beo::sendrecv(beo.comms().world, 0, 1, 
                   
 
-    beo::barrier(world_comm);
+    beo.finalize(0,"All done!"); //must be done before final MPI_Finalize
 
     #if defined _MPI
-    beo.finalize(0,"All done!"); //must be done before final MPI_Finalize
     MPI_Finalize();
     #endif
   

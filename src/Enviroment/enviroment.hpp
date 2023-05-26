@@ -1,5 +1,5 @@
 /*****************************************
- * manager.hpp
+ * enviroment.hpp 
  * 
  * JHT, May 22, 2023, SMU, Dallas, TX
  * 	- created
@@ -8,49 +8,40 @@
  *   provides the interface between 
  *   the user and the beo internals
  *
- * For practical reasons, the init() 
- *   function is provided to actually 
- *   initialize the beo manager --
- *   this should be called AFTER MPI
- *   is initialized if you indend to use
- *   mpi, with _BEO_MPI_ defined. 
+ * This class must be initialized after 
+ *   MPI_Init is called.
  *
  * Similarly, finalize() should be called 
  *   BEFORE MPI is finalized 
  *
  * Functions contained here:
- * 	init
  *	finalize
  * 
 *****************************************/
-#ifndef _BEO_GLOBAL_MANAGER_HPP_
-#define _BEO_GLOBAL_MANAGER_HPP_
+#ifndef _BEO_ENVIROMENT_HPP_
+#define _BEO_ENVIROMENT_HPP_
 
 #include <stdio.h>
 #include <string>
 
-#include "global.hpp"
-#include "../Node/node_inc.hpp"
-#include "../Data/data_inc.hpp"
-
-#include <unordered_map>
+#include "../L0/l0.hpp"
+#include "comms.hpp"
+#include "data_tag_manager.hpp"
 
 namespace beo
 {
 
-class Manager
+class Enviroment
 {
     public:
 
     protected:
  
-        Comms        comms_;
+        Comms            comms_;
 
-        Data_Manager data_manager_; 
+        Data_Tag_Manager data_tag_manager_; 
 
     public:
-
-        void init();
 
         void finalize();
 
@@ -60,21 +51,11 @@ class Manager
 
         Comms& comms() {return comms_;}
 
-        const Data_Manager& data_manager() const {return data_manager_;}
+        const Data_Tag_Manager& data_tag_manager() const {return data_tag_manager_;}
 
-        Data_Manager& data_manager() {return data_manager_;}
+        Data_Tag_Manager& data_tag_manager() {return data_tag_manager_;}
 
 };
-
-/*****************************************
- * init
- *
- * initializes the beo enviroment
-*****************************************/
-void Manager::init()
-{
-    comms().init();
-}
 
 /*****************************************
  * finalize
@@ -83,12 +64,12 @@ void Manager::init()
  * to finalize with a status and a message
  * if desired
 *****************************************/
-void Manager::finalize()
+void Enviroment::finalize()
 {
     comms().finalize();
 }
 
-void Manager::finalize(const int stat, 
+void Enviroment::finalize(const int stat, 
                        const std::string& message)
 {
     beo::barrier(comms().world());
