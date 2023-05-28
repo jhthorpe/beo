@@ -14,10 +14,13 @@
 #ifndef _BEO_L0_HPP_
 #define _BEO_L0_HPP_
 
+#include "stat.hpp"
+#include "utility.hpp"
 #include "chunk_tag.hpp"
 #include "chunk_tag_hash.hpp"
 #include "info.hpp"
 #include "comm.hpp"
+#include "request.hpp"
 #include "ops.hpp"
 
 #endif
