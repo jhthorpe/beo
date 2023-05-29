@@ -17,13 +17,19 @@
 #include "mpi.h"
 #endif
 
+#include <future>
+
 #include "stat.hpp"
 #include "utility.hpp"
 #include "request.hpp"
 #include "comm.hpp"
 
+//#define case_rval
+
 namespace beo
 {
+
+void check_task_id(Comm& comm, int task_id); 
 
 //Create a barrier with all tasks on comm
 int barrier(Comm& comm);
@@ -37,6 +43,14 @@ int send_recv(Comm& comm,
               int         src_id,
               int         tag);              
 
+//two-way nonblocking send/recieve
+Request async_send_recv(Comm& comm,
+                        void*       dest, 
+                        const void* src, 
+                        size_t      bytes,
+                        int         dest_id,
+                        int         src_id,
+                        int         tag);              
 
 /*****************************************
  * creates a barrier on the beo::Comm 
@@ -73,6 +87,18 @@ int send_recv(Comm& comm,
               int         tag)
 {
 
+    //Check for valid dest and src ids
+    if (dest_id >= comm.num_tasks())
+    {
+        printf("beo::send_recv Task %d input dest_id(%d) is invalid\n", comm.task_id(), dest_id);
+        exit(1);
+    }
+
+    if (src_id >= comm.num_tasks())
+    {
+        printf("beo::send_recv Task %d input src_id(%d) is invalid\n", comm.task_id(), src_id);
+        exit(1);
+    }
     #if defined _BEO_MPI_
 
     //MPI-case where both sender and reciever are same task on same comm
@@ -121,6 +147,103 @@ int send_recv(Comm& comm,
     #endif
 
 }
+
+/****************************************
+ * async_send_recv
+ *
+ * Asynchronous send recieve
+****************************************/
+Request async_send_recv(Comm& comm,
+                        void*       dest, 
+                        const void* src, 
+                        size_t      bytes,
+                        int         dest_id,
+                        int         src_id,
+                        int         tag)
+{
+    //Check for valid dest and src ids
+    if (dest_id >= comm.num_tasks())
+    {
+        printf("beo::send_recv Task %d input dest_id(%d) is invalid\n", comm.task_id(), dest_id);
+        exit(1);
+    }
+
+    if (src_id >= comm.num_tasks())
+    {
+        printf("beo::send_recv Task %d input src_id(%d) is invalid\n", comm.task_id(), src_id);
+        exit(1);
+    }
+    
+    #if defined _BEO_MPI_
+
+    //MPI case for when src and dest are same data on same task
+    if (src_id == dest_id && comm.task_id() == src_id)
+    {
+        MPI_Request fake = MPI_REQUEST_NULL;
+        Request request = std::move(fake);
+        return request; 
+    }
+
+    //MPI-Sender
+    else if (comm.task_id() == src_id)
+    {
+        MPI_Request fake; 
+        
+        int tmp = MPI_Isend(src,
+                            bytes, 
+                            MPI_CHAR,
+                            dest_id, 
+                            tag,
+                            comm.comm(),
+                            &fake); 
+
+        if (tmp != MPI_SUCCESS) exit(1);
+
+        Request request = std::move(fake);
+
+        return request; 
+    }
+
+    //MPI_Reciever
+    else if (comm.task_id() == dest_id) 
+    {
+        MPI_Request fake; 
+
+        int tmp = MPI_Irecv(dest,
+                            bytes,
+                            MPI_CHAR, 
+                            src_id, 
+                            tag,
+                            comm.comm(),
+                            &fake); 
+
+        if (tmp != MPI_SUCCESS) exit(1);
+
+        Request request = std::move(fake);
+
+        return request; 
+    }
+
+    else
+    {
+        MPI_Request fake = MPI_REQUEST_NULL;
+        Request request = std::move(fake);
+        return request; 
+    }
+
+    //non-MPI case
+    #else
+
+    Request request = std::async(std::launch::async, [=]()
+    {
+        return beo::memmove(dest, src, bytes);
+    });
+    return request; 
+
+    #endif
+}
+
+
 
 }//end namespace beo
 

@@ -15,8 +15,12 @@
 #include <mpi.h>
 #endif
 
+#include <future>
+
+#include "stat.hpp"
 #include "comm.hpp"
 
+#include <unistd.h>
 namespace beo
 {
 
@@ -24,50 +28,88 @@ class Request
 {
     public:
 
-    protected:
-
         #if defined _BEO_MPI_
-  
-        MPI_Request request_;
+        
+        using request_t = MPI_Request;
+
+        #else
+    
+        using request_t = std::future<int>;
 
         #endif
+
+    protected:
+
+        request_t request_;
 
     public:
 
         //Constructors
-        #if defined _BEO_MPI_
+        Request() {}
 
-        Request& operator=(const MPI_Request& other);
+        Request(request_t&& other);
 
-        Request& operator=(MPI_Request&& other);
+        Request(Request&& other);
 
-        #endif
-
-        Request& operator=(const Request& other);
+        //Assignment operators. Note they are ONLY move-able
+        Request& operator=(request_t&& other);
 
         Request& operator=(Request&& other);
 
+        //Access operators
+        request_t& request() {return request_;}
+        
+        bool is_complete();
+
+        bool is_valid();
+
+        int wait();
+
+        void finalize();
+};
+
+/*****************************************
+ * finalize
+ *
+ * Finalizes the request object
+*****************************************/
+void Request::finalize()
+{
+    wait();
+
+    #if defined _BEO_MPI_
+
+    MPI_Request_free(&request_);
+
+    #endif
+}
+
+/*****************************************
+ * wait
+ *
+ * Waits for the request to be complete. 
+*****************************************/
+int Request::wait()
+{
+    if (is_valid())
+    {
         #if defined _BEO_MPI_
 
-        //Access operators
-        const MPI_Request& request() const {return request_;}
-        
-        MPI_Request& request() {return request_;}
 
-        MPI_Request& operator() () {return request_;}
+        int res = MPI_Wait(&request_, MPI_STATUS_IGNORE);
+        return res == 0 ? BEO_SUCCESS : BEO_FAIL;
 
         #else
 
-        void request() {};
+        request_.get();
 
-        void operator() () {};
+        return BEO_SUCCESS;
 
         #endif
+    }
 
-        bool is_complete();
-
-        bool is_valid() const;
-};
+    return BEO_SUCCESS;
+}
 
 /*****************************************
  * is_complete()
@@ -77,15 +119,22 @@ class Request
 bool Request::is_complete() 
 {
     #if defined _BEO_MPI_
-    int tmp;
+    if (is_valid())
+    {
+        int tmp;
+        MPI_Test(&request_, &tmp, MPI_STATUS_IGNORE);
 
-    MPI_Test(&request_, &tmp, MPI_STATUS_IGNORE);
-
-    return (tmp == 0) ? false : true;
-
+        return (tmp == 0) ? false : true;
+    }
+    
+    else
+    {
+        return true;
+    } 
+   
     #else
 
-    return true;
+    return !request_.valid();
 
     #endif
 }
@@ -95,7 +144,7 @@ bool Request::is_complete()
  *
  * returns true if the request is valid
 *****************************************/
-bool Request::is_valid() const
+bool Request::is_valid()
 {
     #if defined _BEO_MPI_
 
@@ -103,48 +152,38 @@ bool Request::is_valid() const
 
     #else
 
-    return true;
+    return request_.valid();
 
     #endif
+}
+/*****************************************
+ * Constructors
+*****************************************/
+Request::Request(request_t&& other)
+{
+    request_ = std::move(other);
+}
+
+Request::Request(Request&& other)
+{
+    if (&other != this) request_ = std::move(other.request_);
 }
 
 /*****************************************
  * Assignment operators
 *****************************************/
-#if defined _BEO_MPI_
-Request& Request::operator=(const MPI_Request& other)
-{
-    request_ = other;
-    return *this;
-}
-#endif
-
-#if defined _BEO_MPI_
-Request& Request::operator=(MPI_Request&& other)
+Request& Request::operator=(request_t&& other)
 {
     request_ = std::move(other);
     return *this;
 }
-#endif
 
-#if defined _BEO_MPI_
-Request& Request::operator=(const Request& other)
-{
-    if (&other == this) return *this;
-    request_ = other.request_;
-    return *this;
-}
-#endif
-
-#if defined _BEO_MPI_
 Request& Request::operator=(Request&& other)
 {
     if (&other == this) return *this;
     request_ = std::move(other.request_);
     return *this;
 }
-#endif
-
 
 }//end namespace beo
 

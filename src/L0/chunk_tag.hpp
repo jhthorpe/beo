@@ -105,21 +105,21 @@ class Chunk_Tag
         void set_access_status(const Access_Status stat) {acc_status_ = stat;};
 
         //Dimension info
-        const size_t ndim() const {return lengths_.size();}
+        size_t ndim() const {return lengths_.size();}
 
         const offsets_t& offsets() const {return offsets_;}
 
-        const auto offset(const size_t idx) const {return offsets_[idx];}
+        auto offset(const size_t idx) const {return offsets_[idx];}
 
         const lengths_t& lengths() const {return lengths_;}
  
-        const auto length(const size_t idx) const {return lengths_[idx];}
+        auto length(const size_t idx) const {return lengths_[idx];}
 
         const strides_t& strides() const {return strides_;}
 
-        const auto stride(const size_t idx) const {return strides_[idx];}
+        auto stride(const size_t idx) const {return strides_[idx];}
 
-        const size_t size() const 
+        size_t size() const 
         {
             size_t sz = 1;
             for (const auto& len : lengths_) sz *= len;
