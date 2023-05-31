@@ -17,10 +17,9 @@
 
 #include <future>
 
-#include "stat.hpp"
+#include "def.hpp"
 #include "comm.hpp"
 
-#include <unistd.h>
 namespace beo
 {
 

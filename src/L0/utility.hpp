@@ -11,7 +11,7 @@
 
 #include <string.h>
 
-#include "stat.hpp"
+#include "def.hpp"
 
 namespace beo
 {

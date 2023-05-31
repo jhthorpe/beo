@@ -9,6 +9,8 @@
  *
  * Included here:
  *	barrier 
+ *      send_recieve
+ *      async_send_recieve
 *****************************************/
 #ifndef _BEO_L0_OPS_HPP
 #define _BEO_L0_OPS_HPP
@@ -19,19 +21,20 @@
 
 #include <future>
 
-#include "stat.hpp"
+#include "def.hpp"
 #include "utility.hpp"
 #include "request.hpp"
 #include "comm.hpp"
-
-//#define case_rval
 
 namespace beo
 {
 
 void check_task_id(Comm& comm, int task_id); 
 
-//Create a barrier with all tasks on comm
+//Create a barrier on comm. 
+// NOTE: this does NOT guarentee that your 
+//   non-blocking calls are all completed at the time
+//   this barrier is called. 
 int barrier(Comm& comm);
 
 //two-way blocking send/recieve

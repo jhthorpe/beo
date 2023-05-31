@@ -12,4 +12,8 @@
 #define BEO_SUCCESS 0
 #define BEO_FAIL 1
 
+//File IO macros
+#define BEO_OFF_T off_t
+#define BEO_FTELL(X) (ftello(X))
+
 #endif

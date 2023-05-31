@@ -27,6 +27,7 @@
 #include "../L0/l0.hpp"
 #include "comms.hpp"
 #include "data_tag_manager.hpp"
+#include "files.hpp"
 
 namespace beo
 {
@@ -41,6 +42,8 @@ class Enviroment
 
         Data_Tag_Manager data_tag_manager_; 
 
+        Files            files_;
+
     public:
 
         void finalize();
@@ -50,6 +53,10 @@ class Enviroment
         const Comms& comms() const {return comms_;}
 
         Comms& comms() {return comms_;}
+
+        const Files& files() const {return files_;}
+
+        Files& files() {return files_;}
 
         const Data_Tag_Manager& data_tag_manager() const {return data_tag_manager_;}
 
@@ -66,11 +73,13 @@ class Enviroment
 *****************************************/
 void Enviroment::finalize()
 {
+    files().finalize();
+
     comms().finalize();
 }
 
 void Enviroment::finalize(const int stat, 
-                       const std::string& message)
+                          const std::string& message)
 {
     beo::barrier(comms().world());
  
@@ -78,7 +87,8 @@ void Enviroment::finalize(const int stat,
     {
         printf("beo::%s\nbeo::exiting with status %d\n",message.c_str(),stat);
     }
-    comms().finalize();
+
+    finalize();
 }
 
 
