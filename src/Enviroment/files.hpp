@@ -32,20 +32,27 @@ class Files
 
         using file_map_t = std::unordered_map<key_t, file_t>; 
 
-        mutex_t m;
 
     protected:
 
         file_map_t file_map_;
+
+        mutex_t mutex_;
   
     public:
 
         Files();
 
+//        Files& operator=(const Files& other);
+
+        //Mutex control
         void lock();
 
         void unlock();
 
+        mutex_t& mutex() { return mutex_; }
+
+        //File map access
         const file_map_t& file_map() const {return file_map_;}
 
         file_map_t& file_map() {return file_map_;}
@@ -82,7 +89,7 @@ Files::Files()
 *****************************************/
 void Files::lock()
 { 
-    m.lock();
+    mutex().lock();
 
     for (auto& [key, shared_file] : file_map_) shared_file.lock();
 }
@@ -96,7 +103,7 @@ void Files::unlock()
 {
     for (auto& [key, shared_file] : file_map_) shared_file.unlock();
 
-    m.unlock();
+    mutex().unlock();
 }
 
 /*****************************************
@@ -110,7 +117,7 @@ void Files::unlock()
 *****************************************/
 int Files::add(beo::Shared_File&& shared_file)
 {
-    std::lock_guard<mutex_t> guard(m);
+    std::lock_guard<mutex_t> guard(mutex());
 
     return file_map_.emplace(std::make_pair(shared_file.name(), shared_file)).second ? 0: 1;
 }
@@ -124,7 +131,7 @@ int Files::add(beo::Shared_File&& shared_file)
 *****************************************/
 auto& Files::get(const beo::Shared_File::key_t& key) 
 {
-    std::lock_guard<mutex_t> guard(m);
+    std::lock_guard<mutex_t> guard(mutex());
 
     auto itr = file_map_.find(key);
 
@@ -153,7 +160,7 @@ auto& Files::get(const beo::Shared_File::key_t& key)
 *****************************************/
 int Files::remove(const key_t& key)
 {
-    std::lock_guard<mutex_t> guard(m);
+    std::lock_guard<mutex_t> guard(mutex());
 
     auto& file = Files::get(key);
 
