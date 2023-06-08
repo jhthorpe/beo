@@ -28,7 +28,9 @@ class Files
 
         using key_t      = beo::Shared_File::key_t;
 
-        using file_map_t = std::unordered_map<key_t, beo::Shared_File>;
+        using file_t     = beo::Shared_File;
+
+        using file_map_t = std::unordered_map<key_t, file_t>; 
 
         mutex_t m;
 
@@ -59,6 +61,9 @@ class Files
 
         //finalize
         void finalize();
+
+        //Number of files
+        size_t num_files() {return file_map().size();}
 
 }; //end class defintion Files
 
@@ -152,7 +157,7 @@ int Files::remove(const key_t& key)
 
     auto& file = Files::get(key);
 
-    file.close();
+    if (file.is_open()) file.close();
   
     return file_map_.erase(key) == 1 ? 0 : 1;
 }
@@ -170,7 +175,7 @@ void Files::finalize()
 
     for (auto [key, val] : file_map_)
     {
-        val.close();
+        if (val.is_open()) val.close();
     }
 
     unlock();

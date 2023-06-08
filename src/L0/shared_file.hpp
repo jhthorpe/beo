@@ -68,6 +68,8 @@ class Shared_File
 
         name_t  name_;
 
+        bool    is_open_{false};
+
     public:
 
         Shared_File(const std::string& name) {name_ = name;}
@@ -85,6 +87,8 @@ class Shared_File
         int open(Comm& comm, const std::string& mode);
 
         int close();
+
+        bool is_open() const {return is_open_;}
 
         BEO_OFF_T get_pos(); 
 
@@ -604,6 +608,12 @@ BEO_OFF_T Shared_File::get_pos()
 *****************************************/
 int Shared_File::open(Comm& comm, const std::string& mode)
 {
+    if (is_open())
+    {
+        printf("beo::error Cannot open already opened file\n");
+        return BEO_FAIL;
+    }
+
     #if defined _BEO_MPI_
      
     int mpi_mode;
@@ -617,6 +627,8 @@ int Shared_File::open(Comm& comm, const std::string& mode)
         return BEO_FAIL;
     }
 
+    is_open_ = (nullptr != file_) ? true : false; 
+
     return (MPI_SUCCESS ==
             MPI_File_open(comm.comm(), 
                           name_.data(),
@@ -629,6 +641,8 @@ int Shared_File::open(Comm& comm, const std::string& mode)
 
     file_ = fopen(name_.data(), 
                   mode.data());
+   
+    is_open_ = (nullptr != file_) ? true : false; 
 
     return (nullptr != file_) ? BEO_SUCCESS : BEO_FAIL; 
 
@@ -641,6 +655,8 @@ int Shared_File::open(Comm& comm, const std::string& mode)
 *****************************************/
 int Shared_File::close()
 {
+    if (!is_open()) return BEO_SUCCESS;
+   
     #if defined _BEO_MPI_
 
     int stat = MPI_SUCCESS;

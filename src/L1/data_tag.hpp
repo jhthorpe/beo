@@ -126,12 +126,10 @@ class Data_Tag
         void add_chunk_tag(Chunk_Tag&& other);
 
         void add_chunk_tag(const Chunk_Tag::offsets_t& offsets, 
-                           const Chunk_Tag::lengths_t& lengths,
-                           const Chunk_Tag::strides_t& strides);
+                           const Chunk_Tag::lengths_t& lengths);
 
         void add_chunk_tag(Chunk_Tag::offsets_t&& offsets, 
-                           Chunk_Tag::lengths_t&& lengths,
-                           Chunk_Tag::strides_t&& strides);
+                           Chunk_Tag::lengths_t&& lengths);
 
         void reserve(const size_t num);
 
@@ -377,20 +375,17 @@ void Data_Tag::add_chunk_tag(beo::Chunk_Tag&& other)
 }
 
 void Data_Tag::add_chunk_tag(const beo::Chunk_Tag::offsets_t& offsets,
-                             const beo::Chunk_Tag::lengths_t& lengths,
-                             const beo::Chunk_Tag::strides_t& strides)
+                             const beo::Chunk_Tag::lengths_t& lengths)
 {
-    chunk_tags_.insert({offsets, beo::Chunk_Tag{offsets,lengths,strides}});
+    chunk_tags_.insert({offsets, beo::Chunk_Tag{offsets,lengths}});
 }
 
 void Data_Tag::add_chunk_tag(beo::Chunk_Tag::offsets_t&& offsets,
-                             beo::Chunk_Tag::lengths_t&& lengths,
-                             beo::Chunk_Tag::strides_t&& strides)
+                             beo::Chunk_Tag::lengths_t&& lengths)
 {
     chunk_tags_.emplace(std::make_pair(offsets, 
-                                   beo::Chunk_Tag{std::move(offsets),
-                                              std::move(lengths),
-                                              std::move(strides)}));
+                                       beo::Chunk_Tag{std::move(offsets),
+                                                      std::move(lengths)}));
 }
 
 void Data_Tag::reserve(const size_t num) 

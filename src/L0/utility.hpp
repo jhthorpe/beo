@@ -25,6 +25,8 @@ int memmove(void*        dest,
             const void*  src, 
             const size_t len);
 
+size_t calc_alignment(const void* src);
+
 /*****************************************
  * can_alias
  *
@@ -73,6 +75,23 @@ int memmove(void*        dest,
 
 }
  
+/*****************************************
+ * calculates alignment of the pointer up
+ *   to some power of 2
+*****************************************/
+size_t calc_alignment(const void* src)
+{
+  size_t alignment = 1;
+
+  //2,4,8,16,32,64,128,256,512
+  for (size_t m = 2; m <= 2048; m *= 2)
+  {
+    if ((size_t) src % m != 0) {return alignment;}
+    alignment *= 2;
+  }
+  return alignment;
+}
+
 
 } //end namespace beo
 #endif

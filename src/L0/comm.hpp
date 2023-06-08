@@ -68,7 +68,7 @@ class Comm
 
         MPI_Comm& comm() {return comm_;}
 
-        Comm& operator=(const MPI_Comm& other);
+
 
         #endif
 

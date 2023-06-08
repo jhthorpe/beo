@@ -18,6 +18,7 @@
 #include "utility.hpp"
 #include "chunk_tag.hpp"
 #include "chunk_tag_hash.hpp"
+#include "chunk.hpp"
 #include "info.hpp"
 #include "comm.hpp"
 #include "request.hpp"

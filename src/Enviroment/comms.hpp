@@ -45,6 +45,8 @@ class Comms
 
         Comms(const Info& info);
 
+        void init();
+
         const Comm& world() const {return world_;}
 
         Comm& world() {return world_;}
@@ -78,7 +80,23 @@ Comms::Comms(const Info& info)
 
 Comms::Comms()
 {
+    #if defined _BEO_MPI_
+        int flag;
+        MPI_Initialized(&flag);
+        if (flag) init(); 
 
+    #else
+
+        init();
+ 
+    #endif
+}
+
+/*****************************************
+ * initialization
+*****************************************/
+void Comms::init()
+{
     #if defined _BEO_MPI_
     world_ = MPI_COMM_WORLD;
 
@@ -90,8 +108,8 @@ Comms::Comms()
     shared_ = world_;
 
     #endif
+    
 }
-
 
 /*****************************************
  * finalization 
