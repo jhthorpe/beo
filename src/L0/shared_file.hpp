@@ -46,19 +46,21 @@ class Shared_File
 
         #if defined _BEO_MPI_
 
-        using file_t = MPI_File;
+        using file_t  = MPI_File;
 
         #else 
 
-        using file_t = FILE*;  
+        using file_t  = FILE*;  
 
         #endif
 
-        using name_t = std::string;
+        using name_t  = std::string;
 
-        using key_t = name_t;
+        using key_t   = name_t;
 
         using mutex_t = std::recursive_mutex;
+
+        using mode_t  = std::string;
 
         mutex_t m;
 
@@ -67,6 +69,8 @@ class Shared_File
         file_t  file_;
 
         name_t  name_;
+
+        mode_t  mode_;
 
         bool    is_open_{false};
 
@@ -117,6 +121,12 @@ class Shared_File
         Request async_write_at_all(const BEO_OFF_T off, const void* buf, const size_t bytes);
 
         Request async_read_at_all(const BEO_OFF_T off, void* buf, const size_t bytes);
+
+        mutex_t& mutex() { return m; }
+
+        const mode_t& mode() const { return mode_; }
+     
+        mode_t& mode() { return mode_; }
 
 };
 
@@ -608,9 +618,10 @@ BEO_OFF_T Shared_File::get_pos()
 *****************************************/
 int Shared_File::open(Comm& comm, const std::string& mode)
 {
-    if (is_open())
+    if (is_open() && mode_ != mode)
     {
-        printf("beo::error Cannot open already opened file\n");
+        printf("beo::Shared_File::open Cannot open already opened file %s with new status %s\n",
+               name().c_str(), mode_.c_str());
         return BEO_FAIL;
     }
 
@@ -623,7 +634,7 @@ int Shared_File::open(Comm& comm, const std::string& mode)
     else if ("w"  == mode) mpi_mode = MPI_MODE_CREATE | MPI_MODE_WRONLY;
     else
     {
-        printf("beo::error Bad mode %s in beo::shared_file::open\n", mode.c_str());
+        printf("beo::Shared_File::open Bad mode %s in beo::Shared_File::open\n", mode.c_str());
         return BEO_FAIL;
     }
 
@@ -665,7 +676,9 @@ int Shared_File::close()
     {
         stat = MPI_File_close(&file_);
         file_ = MPI_FILE_NULL;
+        is_open_ = false;
     }
+
 
     return (MPI_SUCCESS == stat) ? BEO_SUCCESS : BEO_FAIL;
 
@@ -677,6 +690,7 @@ int Shared_File::close()
     {
         stat = fclose(file_);
         file_ = nullptr;
+        is_open_ = false;
     }
 
     return (nullptr != file_) ? BEO_SUCCESS : BEO_FAIL; 

@@ -35,9 +35,14 @@ class Comms
 {
     protected:
 
+        //The world comm., between all tasks
         beo::Comm world_;
 
+        //The shared comm., between tasks with shared memory
         beo::Comm shared_;
+
+        //The nodes comm., world comm but only the master task on each node
+        beo::Comm nodes_;
 
     public:
 
