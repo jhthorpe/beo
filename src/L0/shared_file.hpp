@@ -618,6 +618,7 @@ BEO_OFF_T Shared_File::get_pos()
 *****************************************/
 int Shared_File::open(Comm& comm, const std::string& mode)
 {
+
     if (is_open() && mode_ != mode)
     {
         printf("beo::Shared_File::open Cannot open already opened file %s with new status %s\n",
@@ -654,6 +655,8 @@ int Shared_File::open(Comm& comm, const std::string& mode)
                   mode.data());
    
     is_open_ = (nullptr != file_) ? true : false; 
+
+    mode_    = (nullptr != file_) ? true : false;
 
     return (nullptr != file_) ? BEO_SUCCESS : BEO_FAIL; 
 

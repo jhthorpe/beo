@@ -142,11 +142,10 @@ auto& Files::get(const beo::Shared_File::key_t& key)
 
     else
     {
-        printf("\nbeo::error\n");                
-        printf("Could not find shared_file %s on Files\n", key.c_str());
+        printf("beo::Files::get Could not find shared_file %s on Files\n", 
+               key.c_str());
         exit(1);
     } 
-
 }
 
 
