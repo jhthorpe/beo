@@ -79,7 +79,7 @@ class Files
  *
  * Basic initialization
 *****************************************/
-Files::Files() 
+inline Files::Files() 
 {}
 
 /*****************************************
@@ -87,7 +87,7 @@ Files::Files()
  *
  * mutex locks the shared_file_manager
 *****************************************/
-void Files::lock()
+inline void Files::lock()
 { 
     mutex().lock();
 
@@ -99,7 +99,7 @@ void Files::lock()
  *
  * unlocks the shared_file_manager
 *****************************************/
-void Files::unlock()
+inline void Files::unlock()
 {
     for (auto& [key, shared_file] : file_map_) shared_file.unlock();
 
@@ -115,7 +115,7 @@ void Files::unlock()
  * Returns 0 if the shared_file was added correctly,
  * 1 otherwise
 *****************************************/
-int Files::add(beo::Shared_File&& shared_file)
+inline int Files::add(beo::Shared_File&& shared_file)
 {
     std::lock_guard<mutex_t> guard(mutex());
 
@@ -129,7 +129,7 @@ int Files::add(beo::Shared_File&& shared_file)
  *
  * 
 *****************************************/
-auto& Files::get(const beo::Shared_File::key_t& key) 
+inline auto& Files::get(const beo::Shared_File::key_t& key) 
 {
     std::lock_guard<mutex_t> guard(mutex());
 
@@ -157,7 +157,7 @@ auto& Files::get(const beo::Shared_File::key_t& key)
  *
  * Returns 0 if no error, 1 if error
 *****************************************/
-int Files::remove(const key_t& key)
+inline int Files::remove(const key_t& key)
 {
     std::lock_guard<mutex_t> guard(mutex());
 
@@ -175,7 +175,7 @@ int Files::remove(const key_t& key)
  * this must be called BEFORE the communicators
  * used in the construction of the files are terminated
 *****************************************/
-void Files::finalize()
+inline void Files::finalize()
 {
     lock(); 
 

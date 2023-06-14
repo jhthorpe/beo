@@ -148,7 +148,7 @@ class Data_Tag
  * 
  * threadsafe
 *****************************************/
-void Data_Tag::remove_chunk_tag(const Chunk_Tag::offsets_t& offsets)
+inline void Data_Tag::remove_chunk_tag(const Chunk_Tag::offsets_t& offsets)
 {
     std::lock_guard<mutex_t> guard(m);
 
@@ -159,7 +159,7 @@ void Data_Tag::remove_chunk_tag(const Chunk_Tag::offsets_t& offsets)
 /*****************************************
  * Retrieve a chunk_tag
 *****************************************/
-auto& Data_Tag::get_chunk_tag(const Chunk_Tag::offsets_t& offsets)
+inline auto& Data_Tag::get_chunk_tag(const Chunk_Tag::offsets_t& offsets)
 {
     std::lock_guard<mutex_t> guard(m);
 
@@ -189,14 +189,14 @@ auto& Data_Tag::get_chunk_tag(const Chunk_Tag::offsets_t& offsets)
  * lock and unlock
  * threadsafe
 *****************************************/
-void Data_Tag::lock() 
+inline void Data_Tag::lock() 
 {
     m.lock();
 
     for (auto& [key, chunk_tag] : chunk_tags_) chunk_tag.lock();
 }
 
-void Data_Tag::unlock() 
+inline void Data_Tag::unlock() 
 {
     for (auto& [key, chunk_tag] : chunk_tags_) chunk_tag.unlock();
 
@@ -207,7 +207,7 @@ void Data_Tag::unlock()
  * size 
  *   returns the number of elements
 *****************************************/
-size_t Data_Tag::size() const 
+inline size_t Data_Tag::size() const 
 {
     size_t sz = 1;
     for (const auto& len : lengths_) sz *= len; 
@@ -218,22 +218,22 @@ size_t Data_Tag::size() const
  * constructors and destructors
  * Threadsafe
 *****************************************/
-Data_Tag::Data_Tag() 
+inline Data_Tag::Data_Tag() 
 {}
 
-Data_Tag::Data_Tag(const std::string& name)
+inline Data_Tag::Data_Tag(const std::string& name)
 {
     std::lock_guard<mutex_t> guard(m);
     name_ = name; 
 }
 
-Data_Tag::Data_Tag(std::string&& name)
+inline Data_Tag::Data_Tag(std::string&& name)
 {
     std::lock_guard<mutex_t> guard(m);
     name_ = std::move(name); 
 }
 
-Data_Tag::Data_Tag(const std::string& name, 
+inline Data_Tag::Data_Tag(const std::string& name, 
                    const size_t num)
 {
     std::lock_guard<mutex_t> guard(m);
@@ -241,7 +241,7 @@ Data_Tag::Data_Tag(const std::string& name,
     reserve(num);
 }
 
-Data_Tag::Data_Tag(std::string&& name, 
+inline Data_Tag::Data_Tag(std::string&& name, 
                    const size_t num)
 {
     std::lock_guard<mutex_t> guard(m);
@@ -249,7 +249,7 @@ Data_Tag::Data_Tag(std::string&& name,
     reserve(num);
 }
 
-Data_Tag::Data_Tag(const std::string& name, 
+inline Data_Tag::Data_Tag(const std::string& name, 
                    chunk_tag_map_t& chunk_tags)
 {
     lock();
@@ -260,7 +260,7 @@ Data_Tag::Data_Tag(const std::string& name,
     unlock();
 }
 
-Data_Tag::Data_Tag(std::string&& name, 
+inline Data_Tag::Data_Tag(std::string&& name, 
                    chunk_tag_map_t&& chunk_tags)
 {
     lock(); 
@@ -271,7 +271,7 @@ Data_Tag::Data_Tag(std::string&& name,
     unlock();
 }
 
-Data_Tag::Data_Tag(const Data_Tag& cother)
+inline Data_Tag::Data_Tag(const Data_Tag& cother)
 {
     auto& other = const_cast<Data_Tag&>(cother); 
 
@@ -286,7 +286,7 @@ Data_Tag::Data_Tag(const Data_Tag& cother)
     unlock();
 }
 
-Data_Tag::Data_Tag(Data_Tag&& other)
+inline Data_Tag::Data_Tag(Data_Tag&& other)
 {
     lock();
     other.lock();
@@ -299,7 +299,7 @@ Data_Tag::Data_Tag(Data_Tag&& other)
     unlock(); 
 }
 
-Data_Tag& Data_Tag::operator=(const Data_Tag& cother)
+inline Data_Tag& Data_Tag::operator=(const Data_Tag& cother)
 {
     auto& other = const_cast<Data_Tag&>(cother);
     
@@ -321,7 +321,7 @@ Data_Tag& Data_Tag::operator=(const Data_Tag& cother)
     return *this;
 }
 
-Data_Tag& Data_Tag::operator=(Data_Tag&& other)
+inline Data_Tag& Data_Tag::operator=(Data_Tag&& other)
 {
     std::lock_guard<mutex_t> g1(m);
     std::lock_guard<mutex_t> g2(other.m);
@@ -344,7 +344,7 @@ Data_Tag& Data_Tag::operator=(Data_Tag&& other)
 /*****************************************
  * Destructor
 *****************************************/
-Data_Tag::~Data_Tag()
+inline Data_Tag::~Data_Tag()
 {}
 
 /*****************************************
@@ -357,7 +357,7 @@ Data_Tag::~Data_Tag()
  * the set of chunk_tags manually
 *****************************************/
 //Copy add
-void Data_Tag::add_chunk_tag(const beo::Chunk_Tag& cother)
+inline void Data_Tag::add_chunk_tag(const beo::Chunk_Tag& cother)
 {
     auto& other = const_cast<beo::Chunk_Tag&>(cother);  
 
@@ -367,20 +367,20 @@ void Data_Tag::add_chunk_tag(const beo::Chunk_Tag& cother)
     chunk_tags_.insert({other.offsets(), other});
 }
 
-void Data_Tag::add_chunk_tag(beo::Chunk_Tag&& other)
+inline void Data_Tag::add_chunk_tag(beo::Chunk_Tag&& other)
 {
     std::lock_guard<mutex_t> g1(m); 
 
     chunk_tags_.emplace(std::make_pair(other.offsets(), other)); 
 }
 
-void Data_Tag::add_chunk_tag(const beo::Chunk_Tag::offsets_t& offsets,
+inline void Data_Tag::add_chunk_tag(const beo::Chunk_Tag::offsets_t& offsets,
                              const beo::Chunk_Tag::lengths_t& lengths)
 {
     chunk_tags_.insert({offsets, beo::Chunk_Tag{offsets,lengths}});
 }
 
-void Data_Tag::add_chunk_tag(beo::Chunk_Tag::offsets_t&& offsets,
+inline void Data_Tag::add_chunk_tag(beo::Chunk_Tag::offsets_t&& offsets,
                              beo::Chunk_Tag::lengths_t&& lengths)
 {
     chunk_tags_.emplace(std::make_pair(offsets, 
@@ -388,7 +388,7 @@ void Data_Tag::add_chunk_tag(beo::Chunk_Tag::offsets_t&& offsets,
                                                       std::move(lengths)}));
 }
 
-void Data_Tag::reserve(const size_t num) 
+inline void Data_Tag::reserve(const size_t num) 
 {
     chunk_tags_.reserve(num);
 }

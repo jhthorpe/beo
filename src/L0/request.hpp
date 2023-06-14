@@ -72,7 +72,7 @@ class Request
  *
  * Finalizes the request object
 *****************************************/
-void Request::finalize()
+inline void Request::finalize()
 {
     wait();
 
@@ -88,7 +88,7 @@ void Request::finalize()
  *
  * Waits for the request to be complete. 
 *****************************************/
-int Request::wait()
+inline int Request::wait()
 {
     if (is_valid())
     {
@@ -115,7 +115,7 @@ int Request::wait()
  *
  * returns true if the request is complete
 *****************************************/
-bool Request::is_complete() 
+inline bool Request::is_complete() 
 {
     #if defined _BEO_MPI_
     if (is_valid())
@@ -143,7 +143,7 @@ bool Request::is_complete()
  *
  * returns true if the request is valid
 *****************************************/
-bool Request::is_valid()
+inline bool Request::is_valid()
 {
     #if defined _BEO_MPI_
 
@@ -158,12 +158,12 @@ bool Request::is_valid()
 /*****************************************
  * Constructors
 *****************************************/
-Request::Request(request_t&& other)
+inline Request::Request(request_t&& other)
 {
     request_ = std::move(other);
 }
 
-Request::Request(Request&& other)
+inline Request::Request(Request&& other)
 {
     if (&other != this) request_ = std::move(other.request_);
 }
@@ -171,13 +171,13 @@ Request::Request(Request&& other)
 /*****************************************
  * Assignment operators
 *****************************************/
-Request& Request::operator=(request_t&& other)
+inline Request& Request::operator=(request_t&& other)
 {
     request_ = std::move(other);
     return *this;
 }
 
-Request& Request::operator=(Request&& other)
+inline Request& Request::operator=(Request&& other)
 {
     if (&other == this) return *this;
     request_ = std::move(other.request_);

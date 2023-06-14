@@ -77,7 +77,7 @@ class Data_Tag_Manager
  *
  * Basic initialization
 *****************************************/
-Data_Tag_Manager::Data_Tag_Manager() 
+inline Data_Tag_Manager::Data_Tag_Manager() 
 {}
 
 /*****************************************
@@ -85,7 +85,7 @@ Data_Tag_Manager::Data_Tag_Manager()
  *
  * mutex locks the data_tag_manager
 *****************************************/
-void Data_Tag_Manager::lock()
+inline void Data_Tag_Manager::lock()
 { 
     m.lock();
 
@@ -97,7 +97,7 @@ void Data_Tag_Manager::lock()
  *
  * unlocks the data_tag_manager
 *****************************************/
-void Data_Tag_Manager::unlock()
+inline void Data_Tag_Manager::unlock()
 {
     for (auto& [key, data_tag] : data_tag_map_) data_tag.unlock();
 
@@ -112,14 +112,14 @@ void Data_Tag_Manager::unlock()
  * Returns 0 if the data_tag was added correctly,
  * 1 otherwise
 *****************************************/
-int Data_Tag_Manager::add(const beo::Data_Tag& data_tag)
+inline int Data_Tag_Manager::add(const beo::Data_Tag& data_tag)
 {
     std::lock_guard<mutex_t> guard(m);
 
     return data_tag_map_.insert({data_tag.name(), data_tag}).second ? 0 : 1;
 }
 
-int Data_Tag_Manager::add(beo::Data_Tag&& data_tag)
+inline int Data_Tag_Manager::add(beo::Data_Tag&& data_tag)
 {
     std::lock_guard<mutex_t> guard(m);
 
@@ -134,7 +134,7 @@ int Data_Tag_Manager::add(beo::Data_Tag&& data_tag)
  *
  * Returns 0 if no error, 1 if error
 *****************************************/
-int Data_Tag_Manager::remove(const key_t& key)
+inline int Data_Tag_Manager::remove(const key_t& key)
 {
     std::lock_guard<mutex_t> guard(m);
   
@@ -149,7 +149,7 @@ int Data_Tag_Manager::remove(const key_t& key)
  *
  * 
 *****************************************/
-auto& Data_Tag_Manager::get(const beo::Data_Tag::key_t& key) 
+inline auto& Data_Tag_Manager::get(const beo::Data_Tag::key_t& key) 
 {
     std::lock_guard<mutex_t> guard(m);
 

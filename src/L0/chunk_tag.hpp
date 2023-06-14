@@ -132,7 +132,7 @@ class Chunk_Tag
  * compares two chunk_tags by ONLY their
  * offsets
 *****************************************/
-bool Chunk_Tag::operator==(const Chunk_Tag& other)
+inline bool Chunk_Tag::operator==(const Chunk_Tag& other)
 {
     return offsets() == other.offsets() ? true : false; 
 }
@@ -143,7 +143,7 @@ bool Chunk_Tag::operator==(const Chunk_Tag& other)
 *****************************************/
 
 //Empty constructor
-Chunk_Tag::Chunk_Tag() 
+inline Chunk_Tag::Chunk_Tag() 
 {
 //    std::lock_guard<mutex_t> guard(m);
 //    loc_status_ = Location_Status::unassigned;
@@ -151,7 +151,7 @@ Chunk_Tag::Chunk_Tag()
 }
 
 //Constructor from offsets and lengths
-Chunk_Tag::Chunk_Tag(const offsets_t& offsets, 
+inline Chunk_Tag::Chunk_Tag(const offsets_t& offsets, 
                      const lengths_t& lengths)
 {
     std::lock_guard<mutex_t> guard(m);
@@ -162,7 +162,7 @@ Chunk_Tag::Chunk_Tag(const offsets_t& offsets,
 }
 
 //Constructor from offsets and lengths
-Chunk_Tag::Chunk_Tag(offsets_t&& offsets, 
+inline Chunk_Tag::Chunk_Tag(offsets_t&& offsets, 
                      lengths_t&& lengths)
 {
     std::lock_guard<mutex_t> guard(m);
@@ -173,7 +173,7 @@ Chunk_Tag::Chunk_Tag(offsets_t&& offsets,
 }
 
 //Copy constructor from other chunk_tag
-Chunk_Tag::Chunk_Tag(const Chunk_Tag& cother) 
+inline Chunk_Tag::Chunk_Tag(const Chunk_Tag& cother) 
 {
     auto& other = const_cast<Chunk_Tag&>(cother);
     std::lock_guard<mutex_t> guard1(m);
@@ -185,7 +185,7 @@ Chunk_Tag::Chunk_Tag(const Chunk_Tag& cother)
 }
 
 //Move constructor from other chunk_tag
-Chunk_Tag::Chunk_Tag(Chunk_Tag&& other) 
+inline Chunk_Tag::Chunk_Tag(Chunk_Tag&& other) 
 {
     std::lock_guard<mutex_t> guard1(m);
     std::lock_guard<mutex_t> guard2(other.m);
@@ -196,7 +196,7 @@ Chunk_Tag::Chunk_Tag(Chunk_Tag&& other)
 }
 
 //Copy assignement from other chunk_tag
-Chunk_Tag& Chunk_Tag::operator=(const Chunk_Tag& cother)
+inline Chunk_Tag& Chunk_Tag::operator=(const Chunk_Tag& cother)
 {
     auto& other = const_cast<Chunk_Tag&>(cother);
     std::lock_guard<mutex_t> guard1(m);
@@ -210,7 +210,7 @@ Chunk_Tag& Chunk_Tag::operator=(const Chunk_Tag& cother)
 }
 
 //Move assignment from other chunk_tag
-Chunk_Tag& Chunk_Tag::operator=(Chunk_Tag&& other)
+inline Chunk_Tag& Chunk_Tag::operator=(Chunk_Tag&& other)
 {
     std::lock_guard<mutex_t> guard1(m);
     std::lock_guard<mutex_t> guard2(other.m);

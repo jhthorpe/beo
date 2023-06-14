@@ -67,7 +67,7 @@ class Comms
 /*****************************************
  * Constructors 
 *****************************************/
-Comms::Comms(const Info& info)
+inline Comms::Comms(const Info& info)
 {
 
     #if defined _BEO_MPI_
@@ -83,7 +83,7 @@ Comms::Comms(const Info& info)
     #endif
 }
 
-Comms::Comms()
+inline Comms::Comms()
 {
     #if defined _BEO_MPI_
         int flag;
@@ -100,7 +100,7 @@ Comms::Comms()
 /*****************************************
  * initialization
 *****************************************/
-void Comms::init()
+inline void Comms::init()
 {
     #if defined _BEO_MPI_
     world_ = MPI_COMM_WORLD;
@@ -121,7 +121,7 @@ void Comms::init()
  *
  * Finalizes the communicators. 
 *****************************************/
-void Comms::finalize()
+inline void Comms::finalize()
 {
     shared_.finalize();
     world_.finalize();

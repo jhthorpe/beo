@@ -133,7 +133,7 @@ class Shared_File
 /*****************************************
  * Constructors
 *****************************************/
-Shared_File::Shared_File(const Shared_File& cother)
+inline Shared_File::Shared_File(const Shared_File& cother)
 {
     auto& other = const_cast<Shared_File&>(cother);
 
@@ -144,7 +144,7 @@ Shared_File::Shared_File(const Shared_File& cother)
     name_ = other.name_;
 }
 
-Shared_File::Shared_File(Shared_File&& other)
+inline Shared_File::Shared_File(Shared_File&& other)
 {
     std::lock_guard<mutex_t> g1(m);
     std::lock_guard<mutex_t> g2(other.m);
@@ -159,7 +159,7 @@ Shared_File::Shared_File(Shared_File&& other)
  * Returns a beo::Request that, when 
  * completed, will have called read_at
 *****************************************/
-Request Shared_File::async_read_at(const BEO_OFF_T off,
+inline Request Shared_File::async_read_at(const BEO_OFF_T off,
                                    void* buf, 
                                    const size_t bytes)
 {
@@ -196,7 +196,7 @@ Request Shared_File::async_read_at(const BEO_OFF_T off,
  * Returns a beo::Request that, when 
  * completed, will have called write_at
 *****************************************/
-Request Shared_File::async_write_at(const BEO_OFF_T off,
+inline Request Shared_File::async_write_at(const BEO_OFF_T off,
                                     const void* buf, 
                                     const size_t bytes)
 {
@@ -239,7 +239,7 @@ Request Shared_File::async_write_at(const BEO_OFF_T off,
  * read/write operations.
  *
 *****************************************/
-Request Shared_File::async_read_at_all(const BEO_OFF_T off,
+inline Request Shared_File::async_read_at_all(const BEO_OFF_T off,
                                        void* buf, 
                                        const size_t bytes)
 {
@@ -282,7 +282,7 @@ Request Shared_File::async_read_at_all(const BEO_OFF_T off,
  * read/write operations.
  *
 *****************************************/
-Request Shared_File::async_write_at_all(const BEO_OFF_T off,
+inline Request Shared_File::async_write_at_all(const BEO_OFF_T off,
                                         const void* buf, 
                                         const size_t bytes)
 {
@@ -323,7 +323,7 @@ Request Shared_File::async_write_at_all(const BEO_OFF_T off,
  * The seek and the read as locked 
  * together to ensure thread-safety
 *****************************************/
-int Shared_File::read_at(const BEO_OFF_T off, 
+inline int Shared_File::read_at(const BEO_OFF_T off, 
                          void* buf,
                          const size_t bytes)
 {
@@ -366,7 +366,7 @@ int Shared_File::read_at(const BEO_OFF_T off,
  * The seek and the read as locked 
  * together to ensure thread-safety 
 *****************************************/
-int Shared_File::write_at(const BEO_OFF_T off, 
+inline int Shared_File::write_at(const BEO_OFF_T off, 
                           const void* buf,
                           const size_t bytes)
 {
@@ -417,7 +417,7 @@ int Shared_File::write_at(const BEO_OFF_T off,
  * read/write operations.
  *
 *****************************************/
-int Shared_File::read_at_all(const BEO_OFF_T off, 
+inline int Shared_File::read_at_all(const BEO_OFF_T off, 
                              void* buf,
                              const size_t bytes)
 {
@@ -459,7 +459,7 @@ int Shared_File::read_at_all(const BEO_OFF_T off,
  * read/write operations.
  *
 *****************************************/
-int Shared_File::write_at_all(const BEO_OFF_T off, 
+inline int Shared_File::write_at_all(const BEO_OFF_T off, 
                               const void* buf,
                               const size_t bytes)
 {
@@ -493,7 +493,7 @@ int Shared_File::write_at_all(const BEO_OFF_T off,
  * Note that this does nothing to ensure
  * threadsafety of any kind.
 *****************************************/
-int Shared_File::read(void* buf,
+inline int Shared_File::read(void* buf,
                       size_t bytes)
 {
 
@@ -528,7 +528,7 @@ int Shared_File::read(void* buf,
  * Note that this does nothing to ensure
  * threadsafety of any kind.
 *****************************************/
-int Shared_File::write(const void* buf,
+inline int Shared_File::write(const void* buf,
                        size_t bytes)
 {
 
@@ -562,7 +562,7 @@ int Shared_File::write(const void* buf,
  * Seeks to an offset in bytes from 
  * SEEK_SET 
 *****************************************/
-int Shared_File::seek(const BEO_OFF_T off)
+inline int Shared_File::seek(const BEO_OFF_T off)
 {
     #if defined _BEO_MPI_
  
@@ -585,7 +585,7 @@ int Shared_File::seek(const BEO_OFF_T off)
  * 
  * returns -1 if the position is bad
 *****************************************/
-BEO_OFF_T Shared_File::get_pos() 
+inline BEO_OFF_T Shared_File::get_pos() 
 {
     #if defined _BEO_MPI_
   
@@ -616,7 +616,7 @@ BEO_OFF_T Shared_File::get_pos()
  *   w	: write, overwrites if exist
  *   w+	: read/write, overwrites if exist
 *****************************************/
-int Shared_File::open(Comm& comm, const std::string& mode)
+inline int Shared_File::open(Comm& comm, const std::string& mode)
 {
 
     if (is_open() && mode_ != mode)
@@ -667,7 +667,7 @@ int Shared_File::open(Comm& comm, const std::string& mode)
  * close
  *
 *****************************************/
-int Shared_File::close()
+inline int Shared_File::close()
 {
     if (!is_open()) return BEO_SUCCESS;
    

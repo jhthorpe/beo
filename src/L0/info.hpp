@@ -71,21 +71,21 @@ class Info
 /*****************************************
  * Constructors
 *****************************************/
-Info::Info(const Info& other)
+inline Info::Info(const Info& other)
 {
     #if defined _BEO_MPI_
     MPI_Info_dup(other.info_, &info_);
     #endif
 }
 
-Info::Info(Info&& other)
+inline Info::Info(Info&& other)
 {
     #if defined _BEO_MPI_
     info_ = std::move(other.info_);
     #endif
 }
 
-Info& Info::operator=(const Info& other)
+inline Info& Info::operator=(const Info& other)
 {
     if (&other == this) return *this;
 
@@ -96,7 +96,7 @@ Info& Info::operator=(const Info& other)
     return *this;
 }
 
-Info& Info::operator=(Info&& other)
+inline Info& Info::operator=(Info&& other)
 {
     if (&other == this) return *this;
 
@@ -108,7 +108,7 @@ Info& Info::operator=(Info&& other)
 }
 
 #if defined _BEO_MPI_
-Info::Info(MPI_Info&& other)
+inline Info::Info(MPI_Info&& other)
 {
     info_ = std::move(other);
 }
@@ -119,7 +119,7 @@ Info::Info(MPI_Info&& other)
  *
  * call this before the MPI_Finalize 
 *****************************************/
-void Info::finalize()
+inline void Info::finalize()
 {
     #if defined _BEO_MPI_
     if (MPI_INFO_NULL != info_) MPI_Info_free(&info_);

@@ -71,14 +71,14 @@ class Enviroment
  * to finalize with a status and a message
  * if desired
 *****************************************/
-void Enviroment::finalize()
+inline void Enviroment::finalize()
 {
     files().finalize();
 
     comms().finalize();
 }
 
-void Enviroment::finalize(const int stat, 
+inline void Enviroment::finalize(const int stat, 
                           const std::string& message)
 {
     beo::barrier(comms().world());

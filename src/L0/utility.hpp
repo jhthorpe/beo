@@ -33,10 +33,10 @@ size_t calc_alignment(const void* src);
  * returns true if buffers a and b (with lengths
  * al and bl) can alias one another
 *****************************************/
-bool can_alias(const void*  a, 
-               const size_t al, 
-               const void*  b, 
-               const size_t bl)
+inline bool can_alias(const void*  a, 
+                      const size_t al, 
+                      const void*  b, 
+                      const size_t bl)
 {
     const size_t aa = (size_t) a; 
     const size_t ae = (size_t) aa + al; 
@@ -52,9 +52,9 @@ bool can_alias(const void*  a,
  * Performs the correct memcpy, memmove 
  *   operation for two pointers
 *****************************************/
-int memmove(void*        dest,
-            const void*  src,
-            const size_t len)
+inline int memmove(void*        dest,
+                   const void*  src,
+                   const size_t len)
 {
 
     if (dest == src) 
@@ -79,7 +79,7 @@ int memmove(void*        dest,
  * calculates alignment of the pointer up
  *   to some power of 2
 *****************************************/
-size_t calc_alignment(const void* src)
+inline size_t calc_alignment(const void* src)
 {
   size_t alignment = 1;
 
@@ -94,4 +94,5 @@ size_t calc_alignment(const void* src)
 
 
 } //end namespace beo
+
 #endif

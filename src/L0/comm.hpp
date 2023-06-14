@@ -68,7 +68,7 @@ class Comm
 
         MPI_Comm& comm() {return comm_;}
 
-
+        Comm& operator=(const MPI_Comm& other);
 
         #endif
 
@@ -95,7 +95,7 @@ class Comm
 /*****************************************
  * Constructors
 *****************************************/
-Comm::Comm(const Comm& other)
+inline Comm::Comm(const Comm& other)
 {
     #if defined _BEO_MPI_
     MPI_Comm_dup(other.comm_, &comm_);
@@ -106,7 +106,7 @@ Comm::Comm(const Comm& other)
     is_master_ = other.is_master_;
 }
 
-Comm::Comm(Comm&& other)
+inline Comm::Comm(Comm&& other)
 {
     #if defined _BEO_MPI_
     comm_ = std::move(other.comm_);
@@ -117,7 +117,7 @@ Comm::Comm(Comm&& other)
     is_master_ = std::move(other.is_master_);
 }
 
-Comm& Comm::operator=(const Comm& other)
+inline Comm& Comm::operator=(const Comm& other)
 {
     if (&other == this) return *this;
 
@@ -132,7 +132,7 @@ Comm& Comm::operator=(const Comm& other)
     return *this;
 }
 
-Comm& Comm::operator=(Comm&& other)
+inline Comm& Comm::operator=(Comm&& other)
 {
     if (&other == this) return *this;
 
@@ -148,7 +148,7 @@ Comm& Comm::operator=(Comm&& other)
 }
 
 #if defined _BEO_MPI_
-Comm& Comm::operator=(const MPI_Comm& other)
+inline Comm& Comm::operator=(const MPI_Comm& other)
 {
     MPI_Comm_dup(other, &comm_);
 
@@ -163,7 +163,7 @@ Comm& Comm::operator=(const MPI_Comm& other)
 #endif
 
 #if defined _BEO_MPI_
-Comm::Comm(const MPI_Comm& mpi_comm)
+inline Comm::Comm(const MPI_Comm& mpi_comm)
 {
     MPI_Comm_dup(mpi_comm, &comm_);
 
@@ -180,7 +180,7 @@ Comm::Comm(const MPI_Comm& mpi_comm)
  * split functions
 *****************************************/
 #if defined _BEO_MPI_
-Comm&& Comm::split(int color, int key) const
+inline Comm&& Comm::split(int color, int key) const
 {
     Comm new_comm; 
 
@@ -191,7 +191,7 @@ Comm&& Comm::split(int color, int key) const
 #endif
 
 #if defined _BEO_MPI_
-Comm&& Comm::split_type(int type, int key) const 
+inline Comm&& Comm::split_type(int type, int key) const 
 {
     Comm new_comm; 
 
@@ -202,7 +202,7 @@ Comm&& Comm::split_type(int type, int key) const
 #endif
 
 #if defined _BEO_MPI_
-Comm&& Comm::split_type(int type, int key, const Info& info) const 
+inline Comm&& Comm::split_type(int type, int key, const Info& info) const 
 {
     Comm new_comm; 
 
@@ -217,7 +217,7 @@ Comm&& Comm::split_type(int type, int key, const Info& info) const
  *
  * call this before the MPI_Finalize 
 *****************************************/
-void Comm::finalize()
+inline void Comm::finalize()
 {
     #if defined _BEO_MPI_
     if (MPI_COMM_NULL != comm_) MPI_Comm_free(&comm_);

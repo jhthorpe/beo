@@ -148,7 +148,7 @@ class Chunk
 /*****************************************
  * allocate
 *****************************************/
-int Chunk::allocate(const size_t bytes)
+inline int Chunk::allocate(const size_t bytes)
 {
     std::lock_guard<mutex_t> g(m);
 
@@ -173,7 +173,7 @@ int Chunk::allocate(const size_t bytes)
 /*****************************************
  * aligned_allocate
 *****************************************/
-int Chunk::aligned_allocate(const size_t alignment, const size_t bytes)
+inline int Chunk::aligned_allocate(const size_t alignment, const size_t bytes)
 {
     std::lock_guard<mutex_t> g(m);
 
@@ -198,7 +198,7 @@ int Chunk::aligned_allocate(const size_t alignment, const size_t bytes)
 /*****************************************
  * free
 *****************************************/
-int Chunk::free()
+inline int Chunk::free()
 {
     std::lock_guard<mutex_t> g(m);
 
@@ -217,7 +217,7 @@ int Chunk::free()
  * compares two chunks by ONLY their
  * offsets
 *****************************************/
-bool Chunk::operator==(const Chunk& other)
+inline bool Chunk::operator==(const Chunk& other)
 {
     return offsets() == other.offsets() ? true : false; 
 }
@@ -225,7 +225,7 @@ bool Chunk::operator==(const Chunk& other)
 /*****************************************
  * Destructor
 *****************************************/
-Chunk::~Chunk()
+inline Chunk::~Chunk()
 {
     std::lock_guard<mutex_t> guard(m);
 
@@ -237,7 +237,7 @@ Chunk::~Chunk()
 *****************************************/
 
 //Empty constructor
-Chunk::Chunk() 
+inline Chunk::Chunk() 
 {
     std::lock_guard<mutex_t> guard(m);
 
@@ -248,7 +248,7 @@ Chunk::Chunk()
 
 //Copy constructor from other chunk_tag
 //This does not initialize the memory
-Chunk::Chunk(const Chunk_Tag& cother)
+inline Chunk::Chunk(const Chunk_Tag& cother)
 {
     std::lock_guard<mutex_t> g1(m);
     auto& other = const_cast<Chunk_Tag&>(cother);
@@ -260,7 +260,7 @@ Chunk::Chunk(const Chunk_Tag& cother)
 //Copy constructor from other chunk
 //When possible, avoid this, as it must do a
 //   deep copy
-Chunk::Chunk(const Chunk& cother) 
+inline Chunk::Chunk(const Chunk& cother) 
 {
     std::lock_guard<mutex_t> guard1(m);
     auto& other = const_cast<Chunk&>(cother);
@@ -279,7 +279,7 @@ Chunk::Chunk(const Chunk& cother)
 }
 
 //Move constructor from other Chunk
-Chunk::Chunk(Chunk&& other) 
+inline Chunk::Chunk(Chunk&& other) 
 {
     std::lock_guard<mutex_t> guard1(m);
     std::lock_guard<mutex_t> guard2(other.m);
@@ -292,7 +292,7 @@ Chunk::Chunk(Chunk&& other)
 
 //Move constructor from other Chunk_Tag
 //This does not initialize any memory
-Chunk::Chunk(Chunk_Tag&& other) 
+inline Chunk::Chunk(Chunk_Tag&& other) 
 {
     std::lock_guard<mutex_t> guard1(m);
     std::lock_guard<mutex_t> guard2(other.m);
@@ -304,7 +304,7 @@ Chunk::Chunk(Chunk_Tag&& other)
 //  When possible, avoid doing this with 
 //  allocated data, as this will perform 
 //  a deep copy
-Chunk& Chunk::operator=(const Chunk& cother)
+inline Chunk& Chunk::operator=(const Chunk& cother)
 {
     auto& other = const_cast<Chunk&>(cother);
     std::lock_guard<mutex_t> guard1(m);
@@ -328,7 +328,7 @@ Chunk& Chunk::operator=(const Chunk& cother)
 }
 
 //Move assignment from other chunk
-Chunk& Chunk::operator=(Chunk&& other)
+inline Chunk& Chunk::operator=(Chunk&& other)
 {
     std::lock_guard<mutex_t> guard1(m);
     std::lock_guard<mutex_t> guard2(other.m);

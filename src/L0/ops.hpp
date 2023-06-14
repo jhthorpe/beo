@@ -58,7 +58,7 @@ Request async_send_recv(Comm& comm,
 /*****************************************
  * creates a barrier on the beo::Comm 
 *****************************************/
-int barrier(Comm& comm)
+inline int barrier(Comm& comm)
 {
     #if defined _BEO_MPI_
 
@@ -81,7 +81,7 @@ int barrier(Comm& comm)
  *   by the appropriate party is referenced 
 *****************************************/
 //two-way blocking send/recieve
-int send_recv(Comm& comm,
+inline int send_recv(Comm& comm,
               void*       dest, 
               const void* src, 
               size_t      bytes,
@@ -156,7 +156,7 @@ int send_recv(Comm& comm,
  *
  * Asynchronous send recieve
 ****************************************/
-Request async_send_recv(Comm& comm,
+inline Request async_send_recv(Comm& comm,
                         void*       dest, 
                         const void* src, 
                         size_t      bytes,
